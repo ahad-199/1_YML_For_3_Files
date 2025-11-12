@@ -1,0 +1,44 @@
+name: Python App (3 Envs One Workflow)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: "Select environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+jobs:
+  run-app:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target_env }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install python-dotenv
+
+      - name: Load environment variables
+        run: |
+          ENV_FILE=".env.${{ inputs.target_env }}"
+          echo "Loading $ENV_FILE"
+          while IFS= read -r line; do
+            [[ -z "$line" || "$line" =~ ^# ]] && continue
+            echo "$line" >> "$GITHUB_ENV"
+          done < "$ENV_FILE"
+
+      - name: Run app
+        run: python app.py
