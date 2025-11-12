@@ -15,10 +15,13 @@ on:
           - staging
           - prod
 
+env:
+  TARGET_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.target_env || 'dev' }}
+
 jobs:
   run-app:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.target_env || 'dev' }}
+    environment: ${{ env.TARGET_ENV }}
 
     steps:
       - name: Checkout code
@@ -36,7 +39,7 @@ jobs:
 
       - name: Load environment variables
         run: |
-          ENV_FILE=".env.${{ inputs.target_env || 'dev' }}"
+          ENV_FILE=".env.${{ env.TARGET_ENV }}"
           echo "Loading $ENV_FILE"
           while IFS= read -r line; do
             [[ -z "$line" || "$line" =~ ^# ]] && continue
