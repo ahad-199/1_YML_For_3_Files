@@ -1,6 +1,9 @@
 name: Python App (3 Envs One Workflow)
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       target_env:
@@ -15,7 +18,7 @@ on:
 jobs:
   run-app:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.target_env }}
+    environment: ${{ inputs.target_env || 'dev' }}
 
     steps:
       - name: Checkout code
@@ -33,7 +36,7 @@ jobs:
 
       - name: Load environment variables
         run: |
-          ENV_FILE=".env.${{ inputs.target_env }}"
+          ENV_FILE=".env.${{ inputs.target_env || 'dev' }}"
           echo "Loading $ENV_FILE"
           while IFS= read -r line; do
             [[ -z "$line" || "$line" =~ ^# ]] && continue
